@@ -1,0 +1,26 @@
+{
+  "name": "simple-code-evaluator",
+  "version": "1.0.0",
+  "description": "Simple code evaluation tool that generates reports with scores",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "keywords": [
+    "code",
+    "evaluation",
+    "ai",
+    "report"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "multer": "^2.0.2",
+    "cors": "^2.8.5"
+  }
+}

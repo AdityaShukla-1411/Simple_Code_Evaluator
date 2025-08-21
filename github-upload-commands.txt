@@ -1,0 +1,14 @@
+# GitHub Upload Commands
+# Run these after creating your repository on GitHub
+
+# Add your GitHub repository URL (replace YOUR_USERNAME)
+git remote add origin https://github.com/YOUR_USERNAME/simple-code-evaluator.git
+
+# Set main branch
+git branch -M main
+
+# Push to GitHub
+git push -u origin main
+
+# After successful push, your repository will be live at:
+# https://github.com/YOUR_USERNAME/simple-code-evaluator

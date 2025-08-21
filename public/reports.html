@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Evaluation Reports - Simple Code Evaluator</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+      .header {
+        background: linear-gradient(135deg, #4caf50, #45a049);
+        color: white;
+        padding: 30px;
+        text-align: center;
+      }
+      .header h1 {
+        font-size: 2.2em;
+        margin-bottom: 10px;
+      }
+      .nav {
+        padding: 20px 40px;
+        border-bottom: 1px solid #eee;
+      }
+      .nav a {
+        color: #4caf50;
+        text-decoration: none;
+        font-weight: bold;
+      }
+      .nav a:hover {
+        text-decoration: underline;
+      }
+      .content {
+        padding: 40px;
+      }
+      .reports-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+      }
+      .report-card {
+        border: 2px solid #f0f0f0;
+        border-radius: 10px;
+        padding: 20px;
+        background: #fafafa;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+      .report-card:hover {
+        border-color: #4caf50;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+      .report-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+      .report-id {
+        font-size: 0.9em;
+        color: #666;
+        font-family: monospace;
+      }
+      .report-type {
+        background: #e8f5e8;
+        color: #2e7d32;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.8em;
+        font-weight: bold;
+      }
+      .report-info {
+        margin-bottom: 10px;
+      }
+      .report-info strong {
+        color: #333;
+      }
+      .report-date {
+        font-size: 0.9em;
+        color: #999;
+      }
+      .language-tag {
+        display: inline-block;
+        background: #2196f3;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.8em;
+        margin-top: 5px;
+      }
+      .no-reports {
+        text-align: center;
+        padding: 60px;
+        color: #666;
+        font-size: 1.1em;
+      }
+      .loading {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+      }
+      .spinner {
+        width: 30px;
+        height: 30px;
+        border: 3px solid #ddd;
+        border-top: 3px solid #4caf50;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+      .modal-content {
+        background-color: white;
+        margin: 5% auto;
+        padding: 0;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 800px;
+        max-height: 80vh;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      }
+      .modal-header {
+        background: #4caf50;
+        color: white;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .modal-body {
+        padding: 30px;
+        max-height: 60vh;
+        overflow-y: auto;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        font-size: 14px;
+        line-height: 1.6;
+        color: #333;
+      }
+      .modal-body h1 {
+        color: #2c3e50;
+        border-bottom: 3px solid #4caf50;
+        padding-bottom: 10px;
+        margin-bottom: 25px;
+      }
+      .modal-body h2 {
+        color: #34495e;
+        margin-top: 25px;
+        margin-bottom: 15px;
+        font-size: 1.2em;
+      }
+      .modal-body h3 {
+        color: #2c3e50;
+        margin-top: 20px;
+        margin-bottom: 10px;
+        font-size: 1.1em;
+      }
+      .modal-body table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 15px 0;
+        background: #f8f9fa;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .modal-body th,
+      .modal-body td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #dee2e6;
+      }
+      .modal-body th {
+        background: #4caf50;
+        color: white;
+        font-weight: 600;
+      }
+      .modal-body tr:last-child td {
+        border-bottom: none;
+      }
+      .modal-body ul {
+        padding-left: 20px;
+      }
+      .modal-body li {
+        margin-bottom: 8px;
+      }
+      .modal-body strong {
+        color: #2c3e50;
+      }
+      .modal-body code {
+        background: #f1f3f4;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: "Courier New", monospace;
+        font-size: 13px;
+      }
+      .modal-body pre {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 4px solid #4caf50;
+        overflow-x: auto;
+        font-family: "Courier New", monospace;
+        font-size: 13px;
+      }
+      .modal-body hr {
+        border: none;
+        height: 2px;
+        background: linear-gradient(90deg, #4caf50, transparent);
+        margin: 25px 0;
+      }
+      .close {
+        color: white;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .close:hover {
+        opacity: 0.8;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>📊 Evaluation Reports</h1>
+        <p>View all your code evaluation reports</p>
+      </div>
+
+      <div class="nav">
+        <a href="/">← Back to Evaluator</a>
+      </div>
+
+      <div class="content">
+        <div id="loading" class="loading">
+          <div class="spinner"></div>
+          Loading reports...
+        </div>
+
+        <div id="reportsContainer" style="display: none">
+          <h2>All Reports</h2>
+          <div id="reportsGrid" class="reports-grid"></div>
+        </div>
+
+        <div id="noReports" class="no-reports" style="display: none">
+          <h3>📭 No Reports Yet</h3>
+          <p>Start evaluating code to see reports here!</p>
+          <a
+            href="/"
+            style="color: #4caf50; text-decoration: none; font-weight: bold"
+            >Go to Evaluator →</a
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal for viewing full report -->
+    <div id="reportModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="modalTitle">Report Details</h3>
+          <span class="close" onclick="closeModal()">&times;</span>
+        </div>
+        <div id="modalBody" class="modal-body"></div>
+      </div>
+    </div>
+
+    <script>
+      async function loadReports() {
+        try {
+          const response = await fetch("/reports");
+          const result = await response.json();
+
+          document.getElementById("loading").style.display = "none";
+
+          if (result.success && result.reports.length > 0) {
+            displayReports(result.reports);
+            document.getElementById("reportsContainer").style.display = "block";
+          } else {
+            document.getElementById("noReports").style.display = "block";
+          }
+        } catch (error) {
+          document.getElementById("loading").style.display = "none";
+          document.getElementById("noReports").innerHTML = `
+                    <h3>❌ Error Loading Reports</h3>
+                    <p>${error.message}</p>
+                `;
+          document.getElementById("noReports").style.display = "block";
+        }
+      }
+
+      function displayReports(reports) {
+        const grid = document.getElementById("reportsGrid");
+        grid.innerHTML = "";
+
+        reports.forEach((report) => {
+          const card = document.createElement("div");
+          card.className = "report-card";
+          card.onclick = () => viewReport(report.id);
+
+          const date = new Date(report.createdAt).toLocaleString();
+          const filename = report.filename || "Direct Input";
+
+          card.innerHTML = `
+                    <div class="report-header">
+                        <div class="report-id">${report.id}</div>
+                        <div class="report-type">${report.type.toUpperCase()}</div>
+                    </div>
+                    <div class="report-info">
+                        <strong>📄 File:</strong> ${filename}
+                    </div>
+                    <div class="report-info">
+                        <strong>🕒 Created:</strong> ${date}
+                    </div>
+                    <div class="language-tag">${report.language}</div>
+                `;
+
+          grid.appendChild(card);
+        });
+      }
+
+      async function viewReport(reportId) {
+        try {
+          const response = await fetch(`/report/${reportId}`);
+          const result = await response.json();
+
+          if (result.success) {
+            const report = result.report;
+            document.getElementById(
+              "modalTitle"
+            ).textContent = `Report: ${report.id}`;
+
+            // Convert markdown-like content to HTML for better display
+            let htmlContent = report.evaluation
+              .replace(/^# (.*$)/gm, "<h1>$1</h1>")
+              .replace(/^## (.*$)/gm, "<h2>$1</h2>")
+              .replace(/^### (.*$)/gm, "<h3>$1</h3>")
+              .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+              .replace(/\*(.*?)\*/g, "<em>$1</em>")
+              .replace(/`(.*?)`/g, "<code>$1</code>")
+              .replace(/^---$/gm, "<hr>")
+              .replace(/^\|(.+)\|$/gm, function (match, content) {
+                const cells = content.split("|").map((cell) => cell.trim());
+                if (cells.some((cell) => cell.includes("---"))) {
+                  return ""; // Skip separator rows
+                }
+                const cellTags = cells.every((cell) =>
+                  /^[A-Za-z\s]+$/.test(cell)
+                )
+                  ? "th"
+                  : "td";
+                return `<tr>${cells
+                  .map((cell) => `<${cellTags}>${cell}</${cellTags}>`)
+                  .join("")}</tr>`;
+              })
+              .replace(/(<tr>.*<\/tr>)/s, "<table>$1</table>")
+              .replace(/^- (.*$)/gm, "<li>$1</li>")
+              .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
+              .replace(/^\d+\. (.*$)/gm, "<li>$1</li>")
+              .replace(/\n\n/g, "</p><p>")
+              .replace(/^\s*(.+)$/gm, "<p>$1</p>")
+              .replace(/<p><h/g, "<h")
+              .replace(/<\/h([1-6])><\/p>/g, "</h$1>")
+              .replace(/<p><hr><\/p>/g, "<hr>")
+              .replace(/<p><table>/g, "<table>")
+              .replace(/<\/table><\/p>/g, "</table>")
+              .replace(/<p><ul>/g, "<ul>")
+              .replace(/<\/ul><\/p>/g, "</ul>");
+
+            document.getElementById("modalBody").innerHTML = htmlContent;
+            document.getElementById("reportModal").style.display = "block";
+          } else {
+            alert("Failed to load report: " + result.message);
+          }
+        } catch (error) {
+          alert("Error loading report: " + error.message);
+        }
+      }
+
+      function closeModal() {
+        document.getElementById("reportModal").style.display = "none";
+      }
+
+      // Close modal when clicking outside
+      window.onclick = function (event) {
+        const modal = document.getElementById("reportModal");
+        if (event.target === modal) {
+          closeModal();
+        }
+      };
+
+      // Load reports on page load
+      loadReports();
+    </script>
+  </body>
+</html>

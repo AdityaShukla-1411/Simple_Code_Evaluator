@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple Code Evaluator</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+      .header {
+        background: linear-gradient(135deg, #4caf50, #45a049);
+        color: white;
+        padding: 30px;
+        text-align: center;
+      }
+      .header h1 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+      }
+      .header p {
+        font-size: 1.1em;
+        opacity: 0.9;
+      }
+      .content {
+        padding: 40px;
+      }
+      .section {
+        margin-bottom: 30px;
+        padding: 25px;
+        border: 2px solid #f0f0f0;
+        border-radius: 10px;
+        background: #fafafa;
+      }
+      .section h2 {
+        color: #333;
+        margin-bottom: 15px;
+        font-size: 1.4em;
+      }
+      .section p {
+        color: #666;
+        margin-bottom: 15px;
+        line-height: 1.6;
+      }
+      .upload-area {
+        border: 3px dashed #ddd;
+        border-radius: 10px;
+        padding: 40px;
+        text-align: center;
+        background: white;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+      .upload-area:hover {
+        border-color: #4caf50;
+        background: #f9fff9;
+      }
+      .upload-area.dragover {
+        border-color: #4caf50;
+        background: #f0fff0;
+      }
+      input[type="file"] {
+        display: none;
+      }
+      .file-icon {
+        font-size: 3em;
+        margin-bottom: 15px;
+        color: #ccc;
+      }
+      .upload-text {
+        font-size: 1.1em;
+        color: #666;
+        margin-bottom: 10px;
+      }
+      .upload-hint {
+        font-size: 0.9em;
+        color: #999;
+      }
+      button {
+        background: linear-gradient(135deg, #4caf50, #45a049);
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 8px;
+        font-size: 1em;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 5px;
+      }
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+      }
+      button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+      .code-input {
+        width: 100%;
+        min-height: 200px;
+        font-family: "Courier New", monospace;
+        padding: 15px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        background: #f8f9fa;
+        font-size: 14px;
+        line-height: 1.5;
+        resize: vertical;
+      }
+      .code-input:focus {
+        outline: none;
+        border-color: #4caf50;
+      }
+      .language-select {
+        padding: 10px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-size: 1em;
+        margin: 10px 5px;
+        background: white;
+      }
+      .result {
+        margin-top: 20px;
+        padding: 25px;
+        border-radius: 12px;
+        background: #f8f9fa;
+        border-left: 4px solid #4caf50;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        font-size: 14px;
+        line-height: 1.6;
+        max-height: 600px;
+        overflow-y: auto;
+        color: #333;
+      }
+      .result h1 {
+        color: #2c3e50;
+        border-bottom: 3px solid #4caf50;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        font-size: 1.5em;
+      }
+      .result h2 {
+        color: #34495e;
+        margin-top: 25px;
+        margin-bottom: 15px;
+        font-size: 1.2em;
+      }
+      .result h3 {
+        color: #2c3e50;
+        margin-top: 20px;
+        margin-bottom: 10px;
+        font-size: 1.1em;
+      }
+      .result table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 15px 0;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .result th,
+      .result td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #dee2e6;
+      }
+      .result th {
+        background: #4caf50;
+        color: white;
+        font-weight: 600;
+      }
+      .result tr:last-child td {
+        border-bottom: none;
+      }
+      .result ul {
+        padding-left: 20px;
+      }
+      .result li {
+        margin-bottom: 8px;
+      }
+      .result strong {
+        color: #2c3e50;
+      }
+      .result code {
+        background: #e8f5e8;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: "Courier New", monospace;
+        font-size: 13px;
+      }
+      .result pre {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 4px solid #4caf50;
+        overflow-x: auto;
+        font-family: "Courier New", monospace;
+        font-size: 13px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .result hr {
+        border: none;
+        height: 2px;
+        background: linear-gradient(90deg, #4caf50, transparent);
+        margin: 25px 0;
+      }
+      .loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        color: #666;
+      }
+      .spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #ddd;
+        border-top: 2px solid #4caf50;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 10px;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      .file-info {
+        background: #e8f5e8;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 15px 0;
+      }
+      .file-info h4 {
+        color: #2e7d32;
+        margin-bottom: 5px;
+      }
+      .reports-link {
+        text-align: center;
+        margin-top: 20px;
+      }
+      .reports-link a {
+        color: #4caf50;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 1.1em;
+      }
+      .reports-link a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🤖 Simple Code Evaluator</h1>
+        <p>
+          Upload your code and get instant AI-powered evaluation with scores
+        </p>
+      </div>
+
+      <div class="content">
+        <!-- File Upload Section -->
+        <div class="section">
+          <h2>📁 Upload Code File</h2>
+          <p>
+            Drag and drop a code file or click to browse. Supports: JS, Python,
+            Java, C++, and more.
+          </p>
+
+          <div
+            class="upload-area"
+            onclick="document.getElementById('fileInput').click()"
+          >
+            <div class="file-icon">📄</div>
+            <div class="upload-text">Click to upload or drag & drop</div>
+            <div class="upload-hint">
+              Supports .js, .py, .java, .cpp, .c, .ts, .php, .rb, .go, .rs
+            </div>
+          </div>
+          <input
+            type="file"
+            id="fileInput"
+            accept=".js,.py,.java,.cpp,.c,.ts,.jsx,.tsx,.php,.rb,.go,.rs"
+          />
+
+          <div id="fileInfo" style="display: none"></div>
+          <button id="uploadBtn" onclick="uploadFile()" style="display: none">
+            📤 Evaluate File
+          </button>
+        </div>
+
+        <!-- Direct Code Input Section -->
+        <div class="section">
+          <h2>⚡ Direct Code Evaluation</h2>
+          <p>Paste your code directly for instant evaluation.</p>
+
+          <textarea
+            class="code-input"
+            id="codeInput"
+            placeholder="// Paste your code here
+function example() {
+    console.log('Hello, World!');
+}"
+          ></textarea>
+
+          <div style="margin: 15px 0">
+            <label for="languageSelect">Language:</label>
+            <select class="language-select" id="languageSelect">
+              <option value="javascript">JavaScript</option>
+              <option value="python">Python</option>
+              <option value="java">Java</option>
+              <option value="cpp">C++</option>
+              <option value="c">C</option>
+              <option value="typescript">TypeScript</option>
+              <option value="php">PHP</option>
+              <option value="ruby">Ruby</option>
+              <option value="go">Go</option>
+              <option value="rust">Rust</option>
+              <option value="unknown">Other</option>
+            </select>
+            <button onclick="evaluateCode()">🔍 Evaluate Code</button>
+          </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="result"></div>
+
+        <!-- Reports Link -->
+        <div class="reports-link">
+          <a href="/reports.html">📊 View All Reports</a>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const API_BASE = "";
+
+      // File upload handling
+      const fileInput = document.getElementById("fileInput");
+      const uploadArea = document.querySelector(".upload-area");
+      const fileInfo = document.getElementById("fileInfo");
+      const uploadBtn = document.getElementById("uploadBtn");
+
+      fileInput.addEventListener("change", handleFileSelect);
+
+      // Drag and drop
+      uploadArea.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        uploadArea.classList.add("dragover");
+      });
+
+      uploadArea.addEventListener("dragleave", () => {
+        uploadArea.classList.remove("dragover");
+      });
+
+      uploadArea.addEventListener("drop", (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove("dragover");
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          fileInput.files = files;
+          handleFileSelect();
+        }
+      });
+
+      function handleFileSelect() {
+        const file = fileInput.files[0];
+        if (file) {
+          fileInfo.innerHTML = `
+                    <div class="file-info">
+                        <h4>📄 Selected File:</h4>
+                        <p><strong>Name:</strong> ${file.name}</p>
+                        <p><strong>Size:</strong> ${(file.size / 1024).toFixed(
+                          2
+                        )} KB</p>
+                        <p><strong>Type:</strong> ${file.type || "Unknown"}</p>
+                    </div>
+                `;
+          fileInfo.style.display = "block";
+          uploadBtn.style.display = "inline-block";
+        }
+      }
+
+      async function uploadFile() {
+        const file = fileInput.files[0];
+        if (!file) {
+          showResult("❌ Please select a file first", "error");
+          return;
+        }
+
+        showLoading("Uploading and evaluating file...");
+
+        try {
+          const formData = new FormData();
+          formData.append("file", file);
+
+          const response = await fetch("/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            showResult(
+              `✅ File Evaluation Complete!\n\nReport ID: ${result.reportId}\nFile: ${result.file.original}\nLanguage: ${result.metadata.language}\n\n${result.evaluation}`,
+              "success"
+            );
+          } else {
+            showResult(`❌ Evaluation Failed: ${result.message}`, "error");
+          }
+        } catch (error) {
+          showResult(`❌ Error: ${error.message}`, "error");
+        }
+      }
+
+      async function evaluateCode() {
+        const code = document.getElementById("codeInput").value;
+        const language = document.getElementById("languageSelect").value;
+
+        if (!code.trim()) {
+          showResult("❌ Please enter some code to evaluate", "error");
+          return;
+        }
+
+        showLoading("Evaluating code with AI...");
+
+        try {
+          const response = await fetch("/evaluate", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ code, language }),
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            showResult(
+              `✅ Code Evaluation Complete!\n\nReport ID: ${result.reportId}\nLanguage: ${language}\n\n${result.evaluation}`,
+              "success"
+            );
+          } else {
+            showResult(`❌ Evaluation Failed: ${result.message}`, "error");
+          }
+        } catch (error) {
+          showResult(`❌ Error: ${error.message}`, "error");
+        }
+      }
+
+      function showLoading(message) {
+        const resultDiv = document.getElementById("result");
+        resultDiv.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    ${message}
+                </div>
+            `;
+        resultDiv.style.display = "block";
+      }
+
+      function showResult(text, type = "success") {
+        const resultDiv = document.getElementById("result");
+
+        // Convert markdown-like content to HTML for better display
+        let htmlContent = text
+          .replace(/^# (.*$)/gm, "<h1>$1</h1>")
+          .replace(/^## (.*$)/gm, "<h2>$1</h2>")
+          .replace(/^### (.*$)/gm, "<h3>$1</h3>")
+          .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+          .replace(/\*(.*?)\*/g, "<em>$1</em>")
+          .replace(/`(.*?)`/g, "<code>$1</code>")
+          .replace(/^---$/gm, "<hr>")
+          .replace(/^\|(.+)\|$/gm, function (match, content) {
+            const cells = content.split("|").map((cell) => cell.trim());
+            if (cells.some((cell) => cell.includes("---"))) {
+              return ""; // Skip separator rows
+            }
+            const cellTags = cells.every((cell) => /^[A-Za-z\s]+$/.test(cell))
+              ? "th"
+              : "td";
+            return `<tr>${cells
+              .map((cell) => `<${cellTags}>${cell}</${cellTags}>`)
+              .join("")}</tr>`;
+          })
+          .replace(/(<tr>.*<\/tr>)/s, "<table>$1</table>")
+          .replace(/^- (.*$)/gm, "<li>$1</li>")
+          .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
+          .replace(/^\d+\. (.*$)/gm, "<li>$1</li>")
+          .replace(/\n\n/g, "</p><p>")
+          .replace(/^\s*(.+)$/gm, "<p>$1</p>")
+          .replace(/<p><h/g, "<h")
+          .replace(/<\/h([1-6])><\/p>/g, "</h$1>")
+          .replace(/<p><hr><\/p>/g, "<hr>")
+          .replace(/<p><table>/g, "<table>")
+          .replace(/<\/table><\/p>/g, "</table>")
+          .replace(/<p><ul>/g, "<ul>")
+          .replace(/<\/ul><\/p>/g, "</ul>");
+
+        resultDiv.innerHTML = `<div class="result">${htmlContent}</div>`;
+        resultDiv.style.display = "block";
+      }
+    </script>
+  </body>
+</html>
