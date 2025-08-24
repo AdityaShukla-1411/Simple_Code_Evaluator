@@ -1,3 +1,5 @@
+'''Check kar ke batana isko sahi hai ki nhi as a sample'''
+
 function quickSort(arr) {
   if (arr.length <= 1) {
     return arr;
@@ -24,3 +26,4 @@ function quickSort(arr) {
 const testArray = [64, 34, 25, 12, 22, 11, 90, 88, 76, 50, 42];
 console.log("Original:", testArray);
 console.log("Sorted:", quickSort(testArray));
+
